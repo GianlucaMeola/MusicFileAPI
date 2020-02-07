@@ -11,11 +11,14 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using MusicFileAPI.Interfaces;
+using MusicFileAPI.Services;
 
 namespace MusicFileAPI
 {
     public class Startup
     {
+        private const string CorsPolicyName = "MyPolicy";
         private const string SwaggerUrl = "v1/swagger.json";
         public Startup(IConfiguration configuration)
         {
@@ -30,6 +33,10 @@ namespace MusicFileAPI
             //services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true);
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            ConfigureCors(services);
+
+            services.AddSingleton<ICloudStorage, AzureStorage>();
 
             services.AddSwaggerGen(c =>
             {
@@ -54,6 +61,8 @@ namespace MusicFileAPI
 
             app.UseRouting();
 
+            app.UseCors(CorsPolicyName);
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
@@ -66,6 +75,19 @@ namespace MusicFileAPI
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint(SwaggerUrl, "Music File API");
+            });
+        }
+
+        private void ConfigureCors(IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(CorsPolicyName,
+                        builder => builder
+                                    .AllowAnyHeader()
+                                    .AllowAnyOrigin()
+                                    .SetPreflightMaxAge(TimeSpan.FromSeconds(2520))
+                                    .WithMethods(new string[] { "OPTIONS", "GET", "POST", "HEAD", "PUT", "DELETE", "PATCH" }));
             });
         }
     }
