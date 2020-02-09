@@ -2,6 +2,7 @@
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 using MusicFileAPI.Interfaces;
+using MusicFileAPI.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -67,15 +68,14 @@ namespace MusicFileAPI.Services
             return allBlobs;
         }
 
-        public async Task UploadAsync(IFormFile file, string title, string artist)
+        public async Task UploadAsync(PayloadDetails payLoadDetails)
         {
-            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(GetRandomBlobName(file.FileName));
-            using (var stream = file.OpenReadStream())
+            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(GetRandomBlobName(payLoadDetails.file.FileName));
+            using (var stream = payLoadDetails.file.OpenReadStream())
             {
-                blob.Metadata.Add("Title", title);
-                blob.Metadata.Add("Artist", artist);
+                blob.Metadata.Add("title", payLoadDetails.title);
+                blob.Metadata.Add("artist", payLoadDetails.artist);
                 await blob.UploadFromStreamAsync(stream);
-
             }
         }
 
@@ -89,11 +89,4 @@ namespace MusicFileAPI.Services
         }
     }
 
-}
-
-public class FileDetails
-{
-    public string title { get; set; }
-    public string artist { get; set; }
-    public Uri uri { get; set; }
 }
