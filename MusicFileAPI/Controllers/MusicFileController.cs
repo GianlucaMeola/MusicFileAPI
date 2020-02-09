@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MusicFileAPI.Interfaces;
+using MusicFileAPI.Model;
 
 namespace MusicFileAPI.Controllers
 {
@@ -28,9 +29,9 @@ namespace MusicFileAPI.Controllers
         }
 
         [HttpPost()]
-        public async Task<IActionResult> Upload([FromForm] IFormFile file)
+        public async Task<IActionResult> Upload([FromForm] PayloadDetails payLoadDetails)
         {
-            await _cloudStorage.UploadAsync(file);
+            await _cloudStorage.UploadAsync(payLoadDetails);
             return Ok();
         }
 

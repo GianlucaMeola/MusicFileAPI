@@ -2,6 +2,7 @@
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
 using MusicFileAPI.Interfaces;
+using MusicFileAPI.Model;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,7 +37,7 @@ namespace MusicFileAPI.Services
             await blob.DeleteIfExistsAsync();
         }
 
-        public async Task<List<Uri>> Index()
+        public async Task<List<FileDetails>> Index()
         {
             // Retrieve storage account information from connection string
             // How to create a storage connection string - http://msdn.microsoft.com/en-us/library/azure/ee758697.aspx
@@ -54,26 +55,27 @@ namespace MusicFileAPI.Services
             await blobContainer.SetPermissionsAsync(new BlobContainerPermissions { PublicAccess = BlobContainerPublicAccessType.Blob });
 
             // Gets all Cloud Block Blobs in the blobContainerName and passes them to teh view
-            List<Uri> allBlobs = new List<Uri>();
-            foreach (IListBlobItem blob in blobContainer.ListBlobs())
+            List<FileDetails> allBlobs = new List<FileDetails>();
+            foreach (CloudBlockBlob item in blobContainer.ListBlobs(null, true, BlobListingDetails.Metadata))
             {
-                if (blob.GetType() == typeof(CloudBlockBlob))
-                    allBlobs.Add(blob.Uri);
-                //https://jj09.net/add-custom-metadata-to-azure-blob-storage-files-and-search-them-with-azure-search/
+                allBlobs.Add(new FileDetails
+                {
+                    uri = item.Uri,
+                    artist = item.Metadata.FirstOrDefault(x => x.Key == "artist").Value,
+                    title = item.Metadata.FirstOrDefault(x => x.Key == "title").Value
+                });
             }
-
             return allBlobs;
         }
 
-        public async Task UploadAsync(IFormFile file)
+        public async Task UploadAsync(PayloadDetails payLoadDetails)
         {
-            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(GetRandomBlobName(file.FileName));
-            using (var stream = file.OpenReadStream())
+            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(GetRandomBlobName(payLoadDetails.file.FileName));
+            using (var stream = payLoadDetails.file.OpenReadStream())
             {
-                blob.Metadata.Add("Title", "title");
-                blob.Metadata.Add("Artist", "artist");
+                blob.Metadata.Add("title", payLoadDetails.title);
+                blob.Metadata.Add("artist", payLoadDetails.artist);
                 await blob.UploadFromStreamAsync(stream);
-
             }
         }
 
@@ -86,4 +88,5 @@ namespace MusicFileAPI.Services
             return string.Format("{0:10}_{1}{2}", DateTime.Now.Ticks, Guid.NewGuid(), ext);
         }
     }
+
 }

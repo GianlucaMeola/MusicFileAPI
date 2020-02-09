@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using MusicFileAPI.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,8 +9,8 @@ namespace MusicFileAPI.Interfaces
 {
     public interface ICloudStorage
     {
-        Task<List<Uri>> Index();
-        Task UploadAsync(IFormFile file);
+        Task<List<FileDetails>> Index();
+        Task UploadAsync(PayloadDetails payLoadDetails);
         Task DeleteFile(string name);
         Task DeleteAll();
     }
