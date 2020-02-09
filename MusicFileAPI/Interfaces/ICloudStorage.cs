@@ -8,8 +8,8 @@ namespace MusicFileAPI.Interfaces
 {
     public interface ICloudStorage
     {
-        Task<List<Uri>> Index();
-        Task UploadAsync(IFormFile file);
+        Task<List<FileDetails>> Index();
+        Task UploadAsync(IFormFile file, string title, string artist);
         Task DeleteFile(string name);
         Task DeleteAll();
     }

@@ -27,10 +27,10 @@ namespace MusicFileAPI.Controllers
             return Ok(files);
         }
 
-        [HttpPost()]
-        public async Task<IActionResult> Upload([FromForm] IFormFile file)
+        [HttpPost("{title}/{artist}")]
+        public async Task<IActionResult> Upload([FromForm] IFormFile file, string title, string artist)
         {
-            await _cloudStorage.UploadAsync(file);
+            await _cloudStorage.UploadAsync(file, title, artist);
             return Ok();
         }
 
