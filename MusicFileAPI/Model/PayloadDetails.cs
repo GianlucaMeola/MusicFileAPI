@@ -8,7 +8,7 @@ namespace MusicFileAPI.Model
 {
     public class PayloadDetails
     {
-        public IFormFile file { get; set; }
+        public IFormFile musicFile { get; set; }
         public string artist { get; set; }
         public string title { get; set; }
     }

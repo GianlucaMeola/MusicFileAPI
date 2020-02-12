@@ -70,8 +70,8 @@ namespace MusicFileAPI.Services
 
         public async Task UploadAsync(PayloadDetails payLoadDetails)
         {
-            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(GetRandomBlobName(payLoadDetails.file.FileName));
-            using (var stream = payLoadDetails.file.OpenReadStream())
+            CloudBlockBlob blob = blobContainer.GetBlockBlobReference(GetRandomBlobName(payLoadDetails.musicFile.FileName));
+            using (var stream = payLoadDetails.musicFile.OpenReadStream())
             {
                 blob.Metadata.Add("title", payLoadDetails.title);
                 blob.Metadata.Add("artist", payLoadDetails.artist);
