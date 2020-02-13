@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using MusicFileAPI.Interfaces;
+using MusicFileAPI.Model;
 using MusicFileAPI.Services;
 
 namespace MusicFileAPI
@@ -43,6 +44,13 @@ namespace MusicFileAPI
             ConfigureCors(services);
 
             services.AddSingleton<ICloudStorage, AzureStorage>();
+            services.AddSingleton<IStorageConnectionFactory, StorageConnectionFactory>(serviceProvider => 
+            {
+                CloudStorageOptions cloudStorageOptions = new CloudStorageOptions();
+                cloudStorageOptions.ConnectionString = Configuration["AzureBlobStorage:ConnectionString"];
+                cloudStorageOptions.Container = Configuration["AzureBlobStorage:BlobContainer"];
+                return new StorageConnectionFactory(cloudStorageOptions);
+            });
 
             services.AddSwaggerGen(c =>
             {

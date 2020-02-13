@@ -35,7 +35,7 @@ namespace MusicFileAPI.Controllers
         [ProducesResponseType(500)]
         public async Task<IActionResult> Get()
         {
-            var files = await _cloudStorage.Index();
+            var files = await _cloudStorage.GetAll();
             return Ok(files);
         }
 
@@ -62,14 +62,14 @@ namespace MusicFileAPI.Controllers
             }
         }
 
-        [HttpDelete("{fileName}")]
-        public async Task<IActionResult> Delete(string fileName)
+        [HttpDelete()]
+        public async Task<IActionResult> Delete([FromForm]string fileName)
         {
             await _cloudStorage.DeleteFile(fileName);
             return Ok();
         }
 
-        [HttpDelete()]
+        [HttpDelete("all")]
         public async Task<IActionResult> DeleteAll()
         {
             await _cloudStorage.DeleteAll();

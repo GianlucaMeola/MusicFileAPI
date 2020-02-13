@@ -13,12 +13,15 @@ namespace MusicFileAPI.Services
 {
     public class AzureStorage : ICloudStorage
     {
-        static CloudBlobClient blobClient;
-        const string blobContainerName = "musicfiles";
-        static CloudBlobContainer blobContainer;
+        private readonly IStorageConnectionFactory _storageConnectionFactory;
 
+        public AzureStorage(IStorageConnectionFactory storageConnectionFactory)
+        {
+            _storageConnectionFactory = storageConnectionFactory;
+        }
         public async Task DeleteAll()
         {
+            var blobContainer = await _storageConnectionFactory.GetContainer();
             foreach (var blob in blobContainer.ListBlobs())
             {
                 if (blob.GetType() == typeof(CloudBlockBlob))
@@ -33,29 +36,15 @@ namespace MusicFileAPI.Services
             Uri uri = new Uri(fileName);
             string filename = Path.GetFileName(uri.LocalPath);
 
+            var blobContainer = await _storageConnectionFactory.GetContainer();
             var blob = blobContainer.GetBlockBlobReference(filename);
             await blob.DeleteIfExistsAsync();
         }
 
-        public async Task<List<FileDetails>> Index()
+        public async Task<List<FileDetails>> GetAll()
         {
-            // Retrieve storage account information from connection string
-            // How to create a storage connection string - http://msdn.microsoft.com/en-us/library/azure/ee758697.aspx
-            CloudStorageAccount storageAccount = CloudStorageAccount.Parse("DefaultEndpointsProtocol=https;AccountName=mediaplayerstorage;AccountKey=s9oaodZkrULJ6MrooBlb0lAWGEOyWrzmtIIwT4xuVvMs4/AG+KRAUEPlBk34pxwP20QGIwUXmy4uN+ZHbYreVg==;EndpointSuffix=core.windows.net");
-
-            // Create a blob client for interacting with the blob service.
-            blobClient = storageAccount.CreateCloudBlobClient();
-            blobContainer = blobClient.GetContainerReference(blobContainerName);
-            await blobContainer.CreateIfNotExistsAsync();
-
-            // To view the uploaded blob in a browser, you have two options. The first option is to use a Shared Access Signature (SAS) token to delegate  
-            // access to the resource. See the documentation links at the top for more information on SAS. The second approach is to set permissions  
-            // to allow public access to blobs in this container. Comment the line below to not use this approach and to use SAS. Then you can view the image  
-            // using: https://[InsertYourStorageAccountNameHere].blob.core.windows.net/webappstoragedotnet-imagecontainer/FileName 
-            await blobContainer.SetPermissionsAsync(new BlobContainerPermissions { PublicAccess = BlobContainerPublicAccessType.Blob });
-
-            // Gets all Cloud Block Blobs in the blobContainerName and passes them to teh view
             List<FileDetails> allBlobs = new List<FileDetails>();
+            var blobContainer = await _storageConnectionFactory.GetContainer();
             foreach (CloudBlockBlob item in blobContainer.ListBlobs(null, true, BlobListingDetails.Metadata))
             {
                 allBlobs.Add(new FileDetails
@@ -70,6 +59,7 @@ namespace MusicFileAPI.Services
 
         public async Task UploadAsync(UploadMusicFileRequest payLoadDetails)
         {
+            var blobContainer = await _storageConnectionFactory.GetContainer();
             CloudBlockBlob blob = blobContainer.GetBlockBlobReference(GetRandomBlobName(payLoadDetails.musicFile.FileName));
             using (var stream = payLoadDetails.musicFile.OpenReadStream())
             {
