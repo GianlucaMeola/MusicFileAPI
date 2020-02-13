@@ -10,7 +10,7 @@ namespace MusicFileAPI.Interfaces
     public interface ICloudStorage
     {
         Task<List<FileDetails>> Index();
-        Task UploadAsync(PayloadDetails payLoadDetails);
+        Task UploadAsync(UploadMusicFileRequest payLoadDetails);
         Task DeleteFile(string name);
         Task DeleteAll();
     }

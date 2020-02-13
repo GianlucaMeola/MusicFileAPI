@@ -68,7 +68,7 @@ namespace MusicFileAPI.Services
             return allBlobs;
         }
 
-        public async Task UploadAsync(PayloadDetails payLoadDetails)
+        public async Task UploadAsync(UploadMusicFileRequest payLoadDetails)
         {
             CloudBlockBlob blob = blobContainer.GetBlockBlobReference(GetRandomBlobName(payLoadDetails.musicFile.FileName));
             using (var stream = payLoadDetails.musicFile.OpenReadStream())

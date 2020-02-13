@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MusicFileAPI.Model
 {
-    public class PayloadDetails
+    public class UploadMusicFileRequest
     {
         public IFormFile musicFile { get; set; }
         public string artist { get; set; }
