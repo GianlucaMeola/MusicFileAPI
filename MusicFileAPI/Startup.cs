@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using FluentValidation.Results;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -10,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using MusicFileAPI.Interfaces;
+using MusicFileAPI.Model;
 using MusicFileAPI.Services;
 
 namespace MusicFileAPI
@@ -29,12 +34,23 @@ namespace MusicFileAPI
         public void ConfigureServices(IServiceCollection services)
         {
             //services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true);
-            services.AddControllersWithViews();
+            services.AddControllersWithViews()
+                .AddFluentValidation(opt =>
+                {
+                    opt.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+                });
             services.AddRazorPages();
 
             ConfigureCors(services);
 
             services.AddSingleton<ICloudStorage, AzureStorage>();
+            services.AddSingleton<IStorageConnectionFactory, StorageConnectionFactory>(serviceProvider => 
+            {
+                CloudStorageOptions cloudStorageOptions = new CloudStorageOptions();
+                cloudStorageOptions.ConnectionString = Configuration["AzureBlobStorage:ConnectionString"];
+                cloudStorageOptions.Container = Configuration["AzureBlobStorage:BlobContainer"];
+                return new StorageConnectionFactory(cloudStorageOptions);
+            });
 
             services.AddSwaggerGen(c =>
             {
